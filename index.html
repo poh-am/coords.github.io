@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DMS to Decimal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <script>
+      onload = ((event) => {
+        document.getElementsByClassName('copy')[0].style.display = "none";
+        new ClipboardJS('.copyValue');
+      });
+
+      function convertDMSToDEC(dms) {
+        var match = dms.match(/(\d+)°(\d+)'(\d+(.\d+)?)\"([NSEW])/);
+
+        if (match) {
+          var degrees = parseFloat(match[1]);
+          var minutes = parseFloat(match[2]);
+          var seconds = parseFloat(match[3]);
+          var direction = match[5].toUpperCase();
+
+          var DEC = degrees + minutes / 60 + seconds / 3600;
+
+          // adjust for direction
+          if (direction == "S" || direction == "W") {
+            DEC = DEC * -1;
+          }
+          return DEC;
+        }
+        return null;
+      }
+
+      function convert() {
+        var input = document.getElementById('input').value;
+        // split into latitude and longitude
+        var input = input.trim();
+
+        if (input.length === 0) {
+          document.getElementById('output').innerHTML = 'Invalid data';
+          document.getElementById('ouputToCopy').value = '';
+          return;
+        }
+
+        var lat,
+          lng;
+        var coordinates = input.split(" ");
+
+        if (input.startsWith("x:")) { // Decimal format
+          coordinates = input.replace(/:/g, ' ').split(' ').filter(n => n)
+          lng = parseFloat(coordinates[1]);
+          lat = parseFloat(coordinates[3]);
+        } else { // DMS format
+          lat = convertDMSToDEC(coordinates[0]);
+          lng = convertDMSToDEC(coordinates[1]);
+        }
+
+        if (lat !== null && lng !== null) {
+          var output = `${
+            lat.toFixed(6)
+          }, ${
+            lng.toFixed(6)
+          }`;
+
+          document.getElementById('ouputToCopy').value = '`' + output + '`';
+          document.getElementById('ouputToCopy').type = 'text';
+          document.getElementsByClassName('copy')[0].style.display = 'block';
+          document.getElementById('output').innerHTML = output;
+        } else {
+          document.getElementById('output').innerHTML = 'Invalid data';
+          document.getElementById('ouputToCopy').value = '';
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container text-center">
+      <div class="row">
+        <p>Examples:
+          <strong>50°27'00.4"N 30°31'27.2"E</strong>
+          or
+          <strong>x: 30.52423 y:50.45010</strong>
+        </p>
+      </div>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <input type="text" id="input" class="form-control" placeholder="Enter Latitude and Longitude">
+        </div>
+        
+        <div class="col-md-6">
+          <button class="btn btn-primary" onclick="convert()">Convert</button>
+        </div>
+      </div>
+
+      <div class="copy row g-2">
+        <div class="col-12">
+          <p id="output"></p>
+        </div>
+
+        <div class="col-md-6">
+          <input type="hidden" class="form-control" id="ouputToCopy">
+        </div>
+
+        <div class="col-md-6">
+          <button class="copyValue btn btn-primary" data-clipboard-target="#ouputToCopy">Copy text</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
