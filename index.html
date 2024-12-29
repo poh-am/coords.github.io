@@ -26,7 +26,12 @@
             DEC = DEC * -1;
           }
           return DEC;
+        } else {
+          decimals = dms.replace(/°/g, ' ').split(' ').filter(n => n);
+
+          return parseFloat(decimals[0]) ?? null;
         }
+
         return null;
       }
 
@@ -43,13 +48,15 @@
 
         var lat,
           lng;
-        var coordinates = input.split(" ");
+        // var coordinates = input.split(" ");
+        var coordinates = input.split(/\s+/);
+
 
         if (input.startsWith("x:")) { // Decimal format
           coordinates = input.replace(/:/g, ' ').split(' ').filter(n => n)
           lng = parseFloat(coordinates[1]);
           lat = parseFloat(coordinates[3]);
-        } else { // DMS format
+        } else { // DMS format or other formats
           lat = convertDMSToDEC(coordinates[0]);
           lng = convertDMSToDEC(coordinates[1]);
         }
@@ -79,13 +86,15 @@
           <strong>50°27'00.4"N 30°31'27.2"E</strong>
           or
           <strong>x: 30.52423 y:50.45010</strong>
+          or
+          <strong>50.450111°N 30.524222°E</strong>
         </p>
       </div>
       <div class="row g-2">
         <div class="col-md-6">
           <input type="text" id="input" class="form-control" placeholder="Enter Latitude and Longitude">
         </div>
-        
+
         <div class="col-md-6">
           <button class="btn btn-primary" onclick="convert()">Convert</button>
         </div>
